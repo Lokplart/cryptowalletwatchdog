@@ -78,8 +78,23 @@ accepted_coins = ["btc", "eth"]
 db_lock = Lock()
 
 
-@app.route('/api', methods=["GET"])
-def api():
+@app.route('/api/view', methods=["GET"])
+def api_view():
+    key = request.args.get("key")
+    print(keys)
+    print(key)
+
+    if key in keys:
+        if key in requests:
+            return render_template("main.html", response=json.dumps(requests[key]))
+        else:
+            return render_template("main.html", response=json.dumps("No requests made"))
+    else:
+        return render_template("main.html", response="Invalid Key")
+
+
+@app.route('/api/request', methods=["GET"])
+def api_request():
     db_lock.acquire()
     key = request.args.get("key")
     coin = request.args.get("coin")
@@ -90,7 +105,7 @@ def api():
     if start_date is None:
         start_date = datetime.now().strftime("%d-%m%Y")
 
-    if None not in [key, coin] and key in keys and coin in accepted_coins:
+    if None not in [key, coin, address] and key in keys and coin in accepted_coins:
         if key not in requests:
             requests[key] = {}
         if address not in requests[key]:
@@ -109,9 +124,9 @@ def api():
         })
 
         open("db/watch_requests.json", 'w').write(json.dumps(requests, sort_keys=True, indent=4))
-        response = "approved"
+        response = "Request approved"
     else:
-        response = "denied"
+        response = "Request denied"
 
     db_lock.release()
     return render_template("main.html", response=response)

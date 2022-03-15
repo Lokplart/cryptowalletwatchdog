@@ -27,7 +27,7 @@ def API_BTC(watch_request):
         if trx_time < earliest_starting_time and watch_request.address not in trx["inputs"]:
             break
 
-        print("checking", trx["hash"], "for", watch_request.address)
+        print("- checking", trx["hash"], "for", watch_request.address)
 
         for watch_data in watch_request.watch_data:
             if watch_data.processed is True or trx_time < watch_data.start_date:
@@ -111,7 +111,7 @@ class Watcher(Thread):
                 if watches[address].coin == "btc":
                     API_BTC(watches[address])
 
-            time.sleep(300)
+            time.sleep(60)
 
 
 def pull():
@@ -195,6 +195,8 @@ def api_request():
 
     # getting client address - mandatory
     address = request.args.get("address")
+    if address is None:
+        return render_template("main.html", response="invalid address")
     # getting expected sender address - optional
     sender = request.args.get("sender")
 
